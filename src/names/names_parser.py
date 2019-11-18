@@ -27,3 +27,10 @@ def choose_cities(number):
         return ' '.join(choice)
     else:
         raise ValueError('Must choose a number of cities less than the size of the master list of cities.')
+
+def choose_homes(cities, number):
+    if number < len(cities):
+        choice = random.sample(cities, k=number)
+        return ' '.join(choice)
+    else:
+        raise ValueError('Must choose a number of cities less than the size of the master list of cities.') 
