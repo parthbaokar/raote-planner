@@ -1,7 +1,7 @@
 import re
 import random
 
-def clean_names():
+def clean_cities():
     with open('master_names.txt', 'r') as file:
         name_input = file.readlines()
     name_input = [line.rstrip() for line in name_input]
@@ -15,7 +15,6 @@ def clean_names():
     with open('master_names.txt', 'w') as file:
         for s in name_output:
             file.write("%s\n" % s)
-
 
 def choose_cities(number):
     input_file = open('master_names.txt', 'r')
