@@ -5,8 +5,11 @@ import random
 import sys
 from random_utils import *
 
+INPUT_DIR = '../../inputs/'
+OUTPUT_DIR = '../../outputs/'
+
 def gen_in(cities, numCities, homes, numHomes, start):
-    filenamein = str(numCities) + ".in"
+    filenamein = INPUT_DIR + str(numCities) + ".in"
     with open(filenamein, "w+") as file:
         file.write(numCities)
         file.write(numHomes)
@@ -17,7 +20,7 @@ def gen_in(cities, numCities, homes, numHomes, start):
         #Graph
 
 def gen_out(numCities, numHomes, lenCycle, numDropoffs):
-    filenameout = str(numCities) + ".out"
+    filenameout = OUTPUT_DIR + str(numCities) + ".out"
     
     allCities = choose_cities(numCities)
     cycle = random.sample(allCities.split(), k=lenCycle)
