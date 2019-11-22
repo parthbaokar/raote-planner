@@ -73,13 +73,11 @@ Scarborough
 Omutoi
 Coricotana
 Lochinver
-Петровские
 Woodbridge
 Ruimte
 Chancay
 Jenau
 Grove
-Черенка
 Mabhoko
 Cannich
 Rabour
@@ -119,7 +117,6 @@ Lebedev
 Collpa
 Huaitiquina
 Livingstone
-Занарач
 Dyserth
 Katulani
 Rata
@@ -250,7 +247,6 @@ Matahura
 Steilrand
 Dusu
 Coliqueo
-Марцули
 Kagolomolo
 Brassington
 Idayipapa

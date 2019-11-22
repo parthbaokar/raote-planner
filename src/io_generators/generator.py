@@ -16,8 +16,6 @@ def gen_in(cities, numCities, homes, numHomes, start):
 
         #Graph
 
-
-
 def gen_out(numCities, numHomes, lenCycle, numDropoffs):
     filenameout = str(numCities) + ".out"
     
@@ -25,9 +23,9 @@ def gen_out(numCities, numHomes, lenCycle, numDropoffs):
     cycle = random.sample(allCities.split(), k=lenCycle)
     homes = random.sample(allCities.split(), k=numHomes)
     
-    print('All cities:', allCities)
-    print('Cycle:', cycle)
-    print('Homes:', homes)
+    # print('All cities:', allCities)
+    # print('Cycle:', cycle)
+    # print('Homes:', homes)
     homesCopy = list(homes)
     cycleCopy = list(cycle)
     random.shuffle(cycleCopy)
@@ -49,7 +47,7 @@ def gen_out(numCities, numHomes, lenCycle, numDropoffs):
         taCities = element_holder[i]
         if dropoff in homes and dropoff not in taCities:
                 restructure_holder(element_holder, dropoff, i)
-        out = dropoff + ' '.join(taCities)
+        out = dropoff + ' ' + ' '.join(taCities)
         dropoffStrings.append(out)
 
     with open(filenameout, "w+") as file:
@@ -57,7 +55,6 @@ def gen_out(numCities, numHomes, lenCycle, numDropoffs):
         file.write(str(numDropoffs) + " \n")
         for dropoff in dropoffStrings:
             file.write(dropoff  + " \n")
-
 
 def restructure_holder(holders, dropoff, idx):
     for i, holder in enumerate(holders):
@@ -68,7 +65,7 @@ def restructure_holder(holders, dropoff, idx):
 
 if __name__ == '__main__':
     for i in [40, 100, 169]:
-        # print(i)
+        print("For {0} cities choose the following options".format(i))
         numHomes = int(input("Number of homes: "))
         lenCycle = int(input("Length of cycle: "))
         numDropoffs = int(input("How many dropoffs: "))
