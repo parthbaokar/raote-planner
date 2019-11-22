@@ -1,8 +1,8 @@
 import numpy as np
 import networkx as nx
 
-V = 100 # number of nodes
-D = 2 # dimensionality
+# V = 100 # number of nodes
+# D = 2 # dimensionality
 
 def generate(V, D):
     positions = np.random.rand(V, D)
@@ -11,14 +11,14 @@ def generate(V, D):
 
     # create a weighted, directed graph in networkx
     graph = nx.from_numpy_matrix(distances, create_using=nx.DiGraph())
-    filename = str(V) + ".out"
-    file = open(filename, "w")
-    for line in nx.generate_adjlist(graph):
-        file.write(line)
-    file.close()
+    # filename = str(V) + ".out"
+    # file = open(filename, "w")
+    # for line in nx.generate_adjlist(graph):
+    #     file.write(line)
+    # file.close()
+    print(graph)
 
 if __name__ == '__main__':
     sizes = [50, 100, 200]
-    D = 2
     for V in sizes:
-        generate(V, D)
+        generate(V, 2)
