@@ -8,10 +8,27 @@ from random_utils import *
 INPUT_DIR = '../../inputs/'
 OUTPUT_DIR = '../../outputs/'
 
-def gen_in(cycle, cities, numCities, homes, numHomes, start):
+def gen_in(cycle, cities, numCities, homes, numHomes, start, dropoffStrings):
     # Graph
     G = nx.Graph()
     cyclelist = cycle.split()
+    first = cyclelist[0]
+    done = set(cyclelist)
+    # cycle
+    for i in range(1, len(cyclelist)):
+        G.add_edge(first, cyclelist[i], weight=5)
+        first = cyclelist[i]
+
+    # dropoffs - each walker has a direct edge to the dropoff location
+    for row in dropoffStrings:
+        dropofflist = row.split()
+        dropoff = dropofflist[0]
+        for i in range(1, len(dropofflist)):
+            G.add_edge(dropoff, dropofflist[i], weight=6)
+
+    # time to add the rest of the cities to our graph (randomly)
+    
+
 
 
 
@@ -60,7 +77,7 @@ def gen_out(numCities, numHomes, lenCycle, numDropoffs):
         out = dropoff + ' ' + ' '.join(taCities)
         dropoffStrings.append(out)
 
-    gen_in(cycle, allCities, numCities, homes, numHomes, cycle[0])
+    gen_in(cycle, allCities, numCities, homes, numHomes, cycle[0], dropoffStrings)
 
     with open(filenameout, "w+") as file:
         file.write(' '.join(cycle + [cycle[0]])  + " \n")
