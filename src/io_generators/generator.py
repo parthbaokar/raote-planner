@@ -11,35 +11,69 @@ OUTPUT_DIR = '../../outputs/'
 def gen_in(cycle, cities, numCities, homes, numHomes, start, dropoffStrings):
     # Graph
     G = nx.Graph()
-    cyclelist = cycle.split()
-    first = cyclelist[0]
-    done = set(cyclelist)
+    # cyclelist = cycle.split()
+    first = cycle[0]
+    done = set(cycle)
     # cycle
-    for i in range(1, len(cyclelist)):
-        G.add_edge(first, cyclelist[i], weight=5)
-        first = cyclelist[i]
+    for i in range(1, len(cycle)):
+        G.add_edge(first, cycle[i], weight=5)
+        first = cycle[i]
 
     # dropoffs - each walker has a direct edge to the dropoff location
     for row in dropoffStrings:
         dropofflist = row.split()
+        done |= set(dropofflist)
         dropoff = dropofflist[0]
         for i in range(1, len(dropofflist)):
-            G.add_edge(dropoff, dropofflist[i], weight=6)
+            if dropoff != dropofflist[i]:
+                G.add_edge(dropoff, dropofflist[i], weight=6)
 
     # time to add the rest of the cities to our graph (randomly)
-    
+    # print(cities)
+    # print(done)
+    citylist = cities.split()
+    for city in citylist:
+        if city not in done:
+            # Add to graph
+            u = random.sample(done, k=1)[0]
+            G.add_edge(u, city, weight=random.randint(5, 9))
+            done |= {city}
 
+    #add random edges
+    for i in range(numCities):
+        u = random.sample(citylist, k=1)[0]
+        v = random.sample(citylist, k=1)[0]
+        if u == v:
+            v = random.sample(citylist, k=1)[0]
+        G.add_edge(u, v,  weight = 8)
 
+    # pos = nx.spring_layout(G)
+    # nx.draw_networkx_labels(G, pos, font_size=20, font_family="sans-serif")
+    # nx.draw_networkx_edge_labels(G, pos, font_size=20, font_family="sans-serif", edge_labels = nx.get_edge_attributes(G, 'weight'))
 
 
 
     filenamein = INPUT_DIR + str(numCities) + ".in"
     with open(filenamein, "w+") as file:
-        file.write(numCities)
-        file.write(numHomes)
-        file.write(cities)
-        file.write(homes)
-        file.write(start)
+        file.write(str(numCities) + '\n')
+        file.write(str(numHomes) + '\n')
+        file.write(cities + '\n')
+        file.write(' '.join(homes) + '\n')
+        file.write(start + '\n')
+        # l = []
+        # for n1, n2, attr in G.edges(data=True):
+        #     l.append(n1, n2, attr['weight'])
+        for city1 in citylist:
+            out = ""
+            for city2 in citylist:
+                try:
+                    weight = G[city1][city2]['weight']
+                except:
+                    weight = "x"
+                out += str(weight) + " "
+            file.write(out + "\n")
+
+
 
         #Graph
 
@@ -93,7 +127,7 @@ def restructure_holder(holders, dropoff, idx):
             break
 
 if __name__ == '__main__':
-    for i in [40, 100, 169]:
+    for i in [50, 100, 200]:
         print("For {0} cities choose the following options".format(i))
         numHomes = int(input("Number of homes: "))
         lenCycle = int(input("Length of cycle: "))
