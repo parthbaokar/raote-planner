@@ -8,7 +8,7 @@ def clean_cities():
     for full_name in name_input:
         if (len(full_name.split()) >= 2):
             continue
-        if full_name.isalnum() and len(full_name) <= 20:
+        if full_name.isalnum() and len(full_name) < 19:
             name_output.add(full_name)
     open('master_names.txt', 'w').close()
     with open('master_names.txt', 'w') as file:
@@ -31,4 +31,4 @@ def choose_homes(cities, number):
         choice = random.sample(cities, k=number)
         return ' '.join(choice)
     else:
-        raise ValueError('Must choose a number of cities less than the size of the master list of cities.') 
+        raise ValueError('Must choose a number of cities less than the size of the master list of cities.')
