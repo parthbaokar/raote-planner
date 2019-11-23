@@ -8,7 +8,7 @@ def clean_cities():
     for full_name in name_input:
         if (len(full_name.split()) >= 2):
             continue
-        if full_name.isalnum() and len(full_name) < 19:
+        if full_name.isalnum() and len(full_name) < 15:
             name_output.add(full_name)
     open('master_names.txt', 'w').close()
     with open('master_names.txt', 'w') as file:
