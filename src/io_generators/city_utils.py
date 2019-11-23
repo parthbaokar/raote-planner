@@ -1,4 +1,3 @@
-import re
 import random
 
 def clean_cities():
@@ -9,7 +8,7 @@ def clean_cities():
     for full_name in name_input:
         if (len(full_name.split()) >= 2):
             continue
-        if re.match('^[\w]+$', full_name) and len(full_name) <= 20:
+        if full_name.isalnum() and len(full_name) <= 20:
             name_output.add(full_name)
     open('master_names.txt', 'w').close()
     with open('master_names.txt', 'w') as file:
