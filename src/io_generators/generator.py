@@ -8,7 +8,14 @@ from random_utils import *
 INPUT_DIR = '../../inputs/'
 OUTPUT_DIR = '../../outputs/'
 
-def gen_in(cities, numCities, homes, numHomes, start):
+def gen_in(cycle, cities, numCities, homes, numHomes, start):
+    # Graph
+    G = nx.Graph()
+    cyclelist = cycle.split()
+
+
+
+
     filenamein = INPUT_DIR + str(numCities) + ".in"
     with open(filenamein, "w+") as file:
         file.write(numCities)
@@ -21,22 +28,22 @@ def gen_in(cities, numCities, homes, numHomes, start):
 
 def gen_out(numCities, numHomes, lenCycle, numDropoffs):
     filenameout = OUTPUT_DIR + str(numCities) + ".out"
-    
+
     allCities = choose_cities(numCities)
     cycle = random.sample(allCities.split(), k=lenCycle)
     homes = random.sample(allCities.split(), k=numHomes)
-    
+
     # print('All cities:', allCities)
     # print('Cycle:', cycle)
     # print('Homes:', homes)
     homesCopy = list(homes)
     cycleCopy = list(cycle)
     random.shuffle(cycleCopy)
-    
+
     dropoffStrings = []
     element_holder = [[] for _ in range(numDropoffs)]
 
-    # distribute total_elements elements in randomly-sized portions among num_of_holders 'element holders' 
+    # distribute total_elements elements in randomly-sized portions among num_of_holders 'element holders'
     random_portions_in_holder = RandIntVec(numDropoffs, numHomes, Distribution=RandFloats(numDropoffs))
 
     # assign each portion of elements to each 'holder'
@@ -49,9 +56,11 @@ def gen_out(numCities, numHomes, lenCycle, numDropoffs):
         dropoff = cycleCopy[i]
         taCities = element_holder[i]
         if dropoff in homes and dropoff not in taCities:
-                restructure_holder(element_holder, dropoff, i)
+            restructure_holder(element_holder, dropoff, i)
         out = dropoff + ' ' + ' '.join(taCities)
         dropoffStrings.append(out)
+
+    gen_in(cycle, allCities, numCities, homes, numHomes, cycle[0])
 
     with open(filenameout, "w+") as file:
         file.write(' '.join(cycle + [cycle[0]])  + " \n")
