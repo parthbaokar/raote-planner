@@ -27,28 +27,28 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         NOTE: both outputs should be in terms of indices not the names of the locations themselves
     """
     G, message = adjacency_matrix_to_graph(adjacency_matrix)
+    startLocation = list_of_locations.index(starting_car_location)
+    homes = convert_locations_to_indices(list_of_homes, list_of_locations)
 
-    homesLeft = convert_locations_to_indices(list_of_homes, list_of_locations)
-    locations = convert_locations_to_indices(list_of_locations, list_of_locations)
-    currLocation = list_of_locations.index(starting_car_location)
+    return shortest_paths_solver(G, list_of_locations, homes, startLocation)
+
+def shortest_paths_solver(G, list_of_locations, home_indices, starting_index, params=[]):
+    currLocation = starting_index
     car_path = [currLocation]
     dropoffs = {}
-    while len(homesLeft) > 0:
-        # print(homesLeft)
-        shortestPathLength = np.array([nx.algorithms.shortest_path_length(G, source=currLocation, target=home) for home in homesLeft])
+
+    while len(home_indices) > 0:
+        shortestPathLength = np.array([nx.algorithms.shortest_path_length(G, source=currLocation, target=home) for home in home_indices])
         argMin = np.argmin(shortestPathLength)
-        next_loc = homesLeft[argMin]
-        # print(next_loc)
+        next_loc = home_indices[argMin]
         shortestPath = nx.algorithms.shortest_path(G, source=currLocation, target=next_loc)
-        # print(shortestPath)
         car_path.extend(shortestPath[1:])
         dropoffs[next_loc] = [next_loc]
         currLocation = next_loc
-        homesLeft.pop(argMin)
-    car_path.extend(nx.algorithms.shortest_path(G, source=currLocation, target=list_of_locations.index(starting_car_location))[1:])
-    # print(car_path)
-    # print(dropoffs)
+        home_indices.pop(argMin)
+    car_path.extend(nx.algorithms.shortest_path(G, source=currLocation, target=starting_index)[1:])
     return car_path, dropoffs
+
 
 """
 ======================================================================
