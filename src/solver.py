@@ -6,6 +6,8 @@ import argparse
 import utils
 import numpy as np
 
+import random
+from collections import defaultdict
 from student_utils import *
 """
 ======================================================================
@@ -30,9 +32,62 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     startLocation = list_of_locations.index(starting_car_location)
     homes = convert_locations_to_indices(list_of_homes, list_of_locations)
 
-    return shortest_paths_solver(G, list_of_locations, homes, startLocation)
+    if 'shortest_paths' in params:
+        return shortest_paths_solver(G, list_of_locations, homes, startLocation)
+    elif 'cluster' in params:
+        return cluster_solver(G, list_of_locations, homes, startLocation)
 
-def shortest_paths_solver(G, list_of_locations, home_indices, starting_index, params=[]):
+def cluster_solver(G, list_of_locations, home_indices, starting_index):
+    bestCost = float('inf')
+    bestPath = None
+    bestDropoff = None
+    for numClusters in range(1, len(home_indices) + 1):
+        mutableHomes = set(home_indices)
+        centroids = findCentroids(G, random.sample(mutableHomes, k=numClusters), 300)
+        car_path, dropoff = shortest_paths_solver(G, list_of_locations, centroids, starting_index)
+        for drop in dropoff:
+            dropoff[drop] = []
+        for drop, homes in dropoff.items():
+            for node, centroid in list(G.nodes(data='centroid')):
+                if centroid == drop and node in home_indices:
+                    homes.append(node)
+        dropoff = {k: v for k, v in dropoff.items() if len(v) > 0}
+        cost, message = cost_of_solution(G, car_path, dropoff)
+        if cost < bestCost:
+            bestCost = cost
+            bestPath = car_path
+            bestDropoff = dropoff
+    return bestPath, bestDropoff
+
+def findCentroids(G, inital_centroids, iter_lim):
+    centroids = inital_centroids
+    while iter_lim > 0:
+        iter_lim -= 1
+        shortest_paths = [[(cent, nx.shortest_path(G, source=n ,target=cent, weight='weight')) for cent in centroids] for n in G.nodes]
+        distances = [[(sp[0],  sum([G[sp[1][i]][sp[1][i+1]]['weight'] for i in range(len(sp[1]) - 1)]) if len(sp[1]) > 1 else 0) for sp in sps] for sps in shortest_paths]
+        closest_centroid = [min(dist, key=lambda d: d[1])[0] for dist in distances]
+        d = defaultdict(list)
+        for i, x in enumerate(closest_centroid):
+            d[x].append(i)
+        newCentroids = []
+        for group in d.keys():
+            nodeLengths = {}
+            for member in d[group]:
+                pathLengths = [nx.algorithms.shortest_path_length(G, source=member, target=node) for node in d[group]]
+                nodeLengths[member] = sum(pathLengths)
+            newCentroid = min(nodeLengths, key=nodeLengths.get)
+            newCentroids.append(newCentroid)
+        if set(newCentroids) == set(centroids) or iter_lim == 0:
+            nodes = [n for n in G]  # the actual id of the nodes
+            cent_dict = {nodes[i]: closest_centroid[i] for i in range(len(nodes))}
+            nx.set_node_attributes(G, cent_dict, 'centroid')
+            break
+        else:
+            centroids = newCentroids
+    return centroids
+
+
+def shortest_paths_solver(G, list_of_locations, home_indices, starting_index):
     currLocation = starting_index
     car_path = [currLocation]
     dropoffs = {}

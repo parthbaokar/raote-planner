@@ -110,3 +110,22 @@ def cost_of_solution(G, car_cycle, dropoff_mapping):
 
 def convert_locations_to_indices(list_to_convert, list_of_locations):
     return [list_of_locations.index(name) if name in list_of_locations else None for name in list_to_convert]
+
+def graph_to_edge_matrix(G):
+    """Convert a networkx graph into an edge matrix.
+    See https://www.wikiwand.com/en/Incidence_matrix for a good explanation on edge matrices
+   
+    Parameters
+    ----------
+    G : networkx graph
+    """
+    # Initialize edge matrix with zeros
+    edge_mat = np.zeros((len(G), len(G)), dtype=int)
+
+    # Loop to set 0 or 1 (diagonal elements are set to 1)
+    for node in G:
+        for neighbor in G.neighbors(node):
+            edge_mat[node][neighbor] = 1
+        edge_mat[node][node] = 1
+
+    return edge_mat
