@@ -33,6 +33,16 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     startLocation = list_of_locations.index(starting_car_location)
     homes = convert_locations_to_indices(list_of_homes, list_of_locations)
 
+    # sp_car, sp_dropoff = shortest_paths_solver(G, list_of_locations, homes, startLocation)
+    # cl_car, cl_dropoff = cluster_solver(G, list_of_locations, homes, startLocation)
+
+    # cost_sp, message_sp = cost_of_solution(G, sp_car, sp_dropoff)
+    # cost_cl, message_cl = cost_of_solution(G, cl_car, cl_dropoff)
+
+    # if cost_sp < cost_cl:
+    #     return sp_car, sp_dropoff
+    # else:
+    #     return cl_car, cl_dropoff
     if 'shortest_paths' in params:
         return shortest_paths_solver(G, list_of_locations, homes, startLocation)
     elif 'cluster' in params:
@@ -44,22 +54,23 @@ def cluster_solver(G, list_of_locations, home_indices, starting_index):
     bestCost = float('inf')
     bestPath = None
     bestDropoff = None
-    for numClusters in range(1, len(home_indices) + 1):
-        mutableHomes = set(home_indices)
-        centroids = findCentroids(G, random.sample(mutableHomes, k=numClusters), 300)
-        car_path, dropoff = shortest_paths_solver(G, list_of_locations, centroids, starting_index)
-        for drop in dropoff:
-            dropoff[drop] = []
-        for drop, homes in dropoff.items():
-            for node, centroid in list(G.nodes(data='centroid')):
-                if centroid == drop and node in home_indices:
-                    homes.append(node)
-        dropoff = {k: v for k, v in dropoff.items() if len(v) > 0}
-        cost, message = cost_of_solution(G, car_path, dropoff)
-        if cost < bestCost:
-            bestCost = cost
-            bestPath = car_path
-            bestDropoff = dropoff
+    for _ in range(3):
+        for numClusters in range(1, len(home_indices) + 1):
+            mutableHomes = set(home_indices)
+            centroids = findCentroids(G, random.sample(mutableHomes, k=numClusters), 200)
+            car_path, dropoff = shortest_paths_solver(G, list_of_locations, centroids, starting_index)
+            for drop in dropoff:
+                dropoff[drop] = []
+            for drop, homes in dropoff.items():
+                for node, centroid in list(G.nodes(data='centroid')):
+                    if centroid == drop and node in home_indices:
+                        homes.append(node)
+            dropoff = {k: v for k, v in dropoff.items() if len(v) > 0}
+            cost, message = cost_of_solution(G, car_path, dropoff)
+            if cost < bestCost:
+                bestCost = cost
+                bestPath = car_path
+                bestDropoff = dropoff
     return bestPath, bestDropoff
 
 def findCentroids(G, inital_centroids, iter_lim):
@@ -91,19 +102,20 @@ def findCentroids(G, inital_centroids, iter_lim):
 
 
 def shortest_paths_solver(G, list_of_locations, home_indices, starting_index):
+    mutableHomes = list(home_indices)
     currLocation = starting_index
     car_path = [currLocation]
     dropoffs = {}
 
-    while len(home_indices) > 0:
-        shortestPathLength = np.array([nx.algorithms.shortest_path_length(G, source=currLocation, target=home) for home in home_indices])
+    while len(mutableHomes) > 0:
+        shortestPathLength = np.array([nx.algorithms.shortest_path_length(G, source=currLocation, target=home) for home in mutableHomes])
         argMin = np.argmin(shortestPathLength)
-        next_loc = home_indices[argMin]
+        next_loc = mutableHomes[argMin]
         shortestPath = nx.algorithms.shortest_path(G, source=currLocation, target=next_loc)
         car_path.extend(shortestPath[1:])
         dropoffs[next_loc] = [next_loc]
         currLocation = next_loc
-        home_indices.pop(argMin)
+        mutableHomes.pop(argMin)
     car_path.extend(nx.algorithms.shortest_path(G, source=currLocation, target=starting_index)[1:])
     return car_path, dropoffs
 
