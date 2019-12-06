@@ -108,6 +108,7 @@ def shortest_paths_solver(G, list_of_locations, home_indices, starting_index):
     return car_path, dropoffs
 
 def anneal_solver(G, list_of_locations, homes, startLocation):
+    # state is [[Rao's route], {dropoff location: dropoff TAs}]
     init_state = []
     dth = DTH(init_state, G)
     itinerary, e = dth.anneal()
@@ -123,7 +124,7 @@ class DTH(Annealer):
         super(DTH, self).__init__(state)  # important!
 
     def move(self):
-        """Creates next candidate state"""
+        """Creates next candidate state, returns change in energy"""
 
     def energy(self):
         """Calculates total cost of trip"""
