@@ -131,15 +131,23 @@ def shortest_paths_solver(G, list_of_locations, home_indices, starting_index):
     return car_path, dropoffs
 
 def anneal_solver(G, list_of_locations, homes, startLocation, shortest_paths, shortest_path_lengths):
-    # state is [[Rao's route], {dropoff location: dropoff TAs}]
+    # state is [Rao's route]
     route = [startLocation] + [i[1] for i in nx.find_cycle(G, source=startLocation)]
-    dropoffs = {}
-    for i in range(len(route) - 1):
-        dropoffs[route[i]] = homes[i // len(route) * len(homes) : (i + 1) // len(route) * len(homes)]
-    init_state = [route, dropoffs]
+    # dropoffs = {}
+    # for i in range(len(route) - 1):
+    #     dropoffs[route[i]] = homes[i // len(route) * len(homes) : (i + 1) // len(route) * len(homes)]
+    init_state = [route]
     dth = DTH(init_state, G)
     itinerary, e = dth.anneal()
-    return itinerary[0], itinerary[1]
+    return itinerary
+
+def which_dropoff(G, route, home):
+    """
+    Where should a TA get dropped off along Rao's route?
+    route: driving cycle (list)
+    home: the TA that's getting dropped off
+    """
+    return min(route, key=lambda i: SHORTEST_PATHS_LENGTHS[i][home])
 
 
 # Simulated Annealing
@@ -154,30 +162,42 @@ class DTH(Annealer):
         """Creates next candidate state, returns change in energy"""
         initial = self.energy()
 
-        r = random.random()
-        if r < 0.25:
-            # if self.state[1].keys() == 1
-            # Move one home from one dropoff to another
-            drop1 = random.choice(self.state[0])
-            while self.state[1][drop1] == []:
-                # ensures there are dropoffs at this location
-                drop1 = random.choice(self.state[0])
-            drop2 = random.choice(self.state[0])
-            while drop2 == drop1:
-                drop2 = random.choice(self.state[0])
-            tomove = random.choice(self.state[1][drop1])
-            self.state[1][drop1].remove(tomove)
-            self.state[1][drop2].append(tomove)
-        elif r < 0.5:
-            # Add a city to Rao's route
-
-            self.state[1][toadd] = []
-        elif r < 0.75:
-            # Remove a city from Rao's route, if it is a dropoff point, move them to another dropoff
+        if len(self.state) == 1:
+            # Add a city to route
             pass
         else:
-            #
-            pass
+            r = random.random()
+            if r < 0.5:
+                # add city
+                pass
+            else:
+                # remove city
+                pass
+
+
+        # if r < 0.25:
+        #     # if self.state[1].keys() == 1
+        #     # Move one home from one dropoff to another
+        #     drop1 = random.choice(self.state[0])
+        #     while self.state[1][drop1] == []:
+        #         # ensures there are dropoffs at this location
+        #         drop1 = random.choice(self.state[0])
+        #     drop2 = random.choice(self.state[0])
+        #     while drop2 == drop1:
+        #         drop2 = random.choice(self.state[0])
+        #     tomove = random.choice(self.state[1][drop1])
+        #     self.state[1][drop1].remove(tomove)
+        #     self.state[1][drop2].append(tomove)
+        # elif r < 0.5:
+        #     # Add a city to Rao's route
+        #
+        #     self.state[1][toadd] = []
+        # elif r < 0.75:
+        #     # Remove a city from Rao's route, if it is a dropoff point, move them to another dropoff
+        #     pass
+        # else:
+        #     #
+        #     pass
 
 
 
