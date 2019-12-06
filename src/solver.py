@@ -139,7 +139,7 @@ def anneal_solver(G, list_of_locations, homes, startLocation, shortest_paths, sh
     init_state = [route, dropoffs]
     dth = DTH(init_state, G)
     itinerary, e = dth.anneal()
-    return itinerary
+    return itinerary[0], itinerary[1]
 
 
 # Simulated Annealing
@@ -153,6 +153,31 @@ class DTH(Annealer):
     def move(self):
         """Creates next candidate state, returns change in energy"""
         initial = self.energy()
+
+        r = random.random()
+        if r < 0.25:
+            # if self.state[1].keys() == 1
+            # Move one home from one dropoff to another
+            drop1 = random.choice(self.state[0])
+            while self.state[1][drop1] == []:
+                # ensures there are dropoffs at this location
+                drop1 = random.choice(self.state[0])
+            drop2 = random.choice(self.state[0])
+            while drop2 == drop1:
+                drop2 = random.choice(self.state[0])
+            tomove = random.choice(self.state[1][drop1])
+            self.state[1][drop1].remove(tomove)
+            self.state[1][drop2].append(tomove)
+        elif r < 0.5:
+            # Add a city to Rao's route
+
+            self.state[1][toadd] = []
+        elif r < 0.75:
+            # Remove a city from Rao's route, if it is a dropoff point, move them to another dropoff
+            pass
+        else:
+            #
+
 
 
         return initial - self.energy()
