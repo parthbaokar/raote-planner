@@ -5,6 +5,7 @@ sys.path.append('../..')
 import argparse
 import utils
 import numpy as np
+from simanneal import Annealer # pip install simanneal
 
 import random
 from collections import defaultdict
@@ -36,6 +37,8 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         return shortest_paths_solver(G, list_of_locations, homes, startLocation)
     elif 'cluster' in params:
         return cluster_solver(G, list_of_locations, homes, startLocation)
+    elif 'anneal' in params:
+        return anneal_solver(G, list_of_locations, homes, startLocation)
 
 def cluster_solver(G, list_of_locations, home_indices, starting_index):
     bestCost = float('inf')
@@ -104,6 +107,26 @@ def shortest_paths_solver(G, list_of_locations, home_indices, starting_index):
     car_path.extend(nx.algorithms.shortest_path(G, source=currLocation, target=starting_index)[1:])
     return car_path, dropoffs
 
+def anneal_solver(G, list_of_locations, homes, startLocation):
+    init_state = []
+    dth = DTH(init_state, G)
+    itinerary, e = dth.anneal()
+    return itinerary
+
+
+# Simulated Annealing
+class DTH(Annealer):
+
+    # Pass in initial state and graph
+    def __init__(self, state, graph):
+        self.graph = graph
+        super(DTH, self).__init__(state)  # important!
+
+    def move(self):
+        """Creates next candidate state"""
+
+    def energy(self):
+        """Calculates total cost of trip"""
 
 """
 ======================================================================
