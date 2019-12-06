@@ -33,31 +33,38 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     startLocation = list_of_locations.index(starting_car_location)
     homes = convert_locations_to_indices(list_of_homes, list_of_locations)
 
-    # sp_car, sp_dropoff = shortest_paths_solver(G, list_of_locations, homes, startLocation)
-    # cl_car, cl_dropoff = cluster_solver(G, list_of_locations, homes, startLocation)
+    SHORTEST_PATHS = defaultdict(list)
+    SHORTEST_PATHS_LENGTHS = defaultdict(list)
+    for node in G.nodes:
+        [SHORTEST_PATHS[node].append(nx.shortest_path(G, source=node, target=n, weight='weight')) for n in G.nodes]
+        [SHORTEST_PATHS_LENGTHS[node].append(nx.algorithms.shortest_path_length(G, source=node, target=n)) for n in G.nodes]
 
-    # cost_sp, message_sp = cost_of_solution(G, sp_car, sp_dropoff)
-    # cost_cl, message_cl = cost_of_solution(G, cl_car, cl_dropoff)
+    sp_car, sp_dropoff = shortest_paths_solver(G, list_of_locations, homes, startLocation)
+    cl_car, cl_dropoff = cluster_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
 
-    # if cost_sp < cost_cl:
-    #     return sp_car, sp_dropoff
-    # else:
-    #     return cl_car, cl_dropoff
-    if 'shortest_paths' in params:
-        return shortest_paths_solver(G, list_of_locations, homes, startLocation)
-    elif 'cluster' in params:
-        return cluster_solver(G, list_of_locations, homes, startLocation)
-    elif 'anneal' in params:
-        return anneal_solver(G, list_of_locations, homes, startLocation)
+    cost_sp, message_sp = cost_of_solution(G, sp_car, sp_dropoff)
+    cost_cl, message_cl = cost_of_solution(G, cl_car, cl_dropoff)
 
-def cluster_solver(G, list_of_locations, home_indices, starting_index):
+    if cost_sp < cost_cl:
+        return sp_car, sp_dropoff
+    else:
+        return cl_car, cl_dropoff
+    # if 'shortest_paths' in params:
+    #     return shortest_paths_solver(G, list_of_locations, homes, startLocation)
+    # elif 'cluster' in params:
+    #     return cluster_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
+    # elif 'anneal' in params:
+    #     return anneal_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
+
+def cluster_solver(G, list_of_locations, home_indices, starting_index, shortest_paths, shortest_path_lengths):
     bestCost = float('inf')
     bestPath = None
     bestDropoff = None
     for _ in range(3):
         for numClusters in range(1, len(home_indices) + 1):
             mutableHomes = set(home_indices)
-            centroids = findCentroids(G, random.sample(mutableHomes, k=numClusters), 200)
+            # print('num clusters', numClusters)
+            centroids = findCentroids(G, random.sample(mutableHomes, k=numClusters), 200, shortest_paths, shortest_path_lengths)
             car_path, dropoff = shortest_paths_solver(G, list_of_locations, centroids, starting_index)
             for drop in dropoff:
                 dropoff[drop] = []
@@ -73,12 +80,16 @@ def cluster_solver(G, list_of_locations, home_indices, starting_index):
                 bestDropoff = dropoff
     return bestPath, bestDropoff
 
-def findCentroids(G, inital_centroids, iter_lim):
+def findCentroids(G, inital_centroids, iter_lim, shortest_paths_dij, shortest_path_lengths):
     centroids = inital_centroids
-    while iter_lim > 0:
-        iter_lim -= 1
-        shortest_paths = [[(cent, nx.shortest_path(G, source=n ,target=cent, weight='weight')) for cent in centroids] for n in G.nodes]
+    iter_num = 0
+    while iter_num < iter_lim:
+        # print(iter_num)
+        iter_num += 1
+        shortest_paths = [[(cent, shortest_paths_dij[n][cent]) for cent in centroids] for n in G.nodes]
+        # shortest_paths = [[(cent, nx.shortest_path(G, source=n ,target=cent, weight='weight')) for cent in centroids] for n in G.nodes]
         distances = [[(sp[0],  sum([G[sp[1][i]][sp[1][i+1]]['weight'] for i in range(len(sp[1]) - 1)]) if len(sp[1]) > 1 else 0) for sp in sps] for sps in shortest_paths]
+        # distances = [[(sp[0],  sum([G[sp[1][i]][sp[1][i+1]]['weight'] for i in range(len(sp[1]) - 1)]) if len(sp[1]) > 1 else 0) for sp in sps] for sps in shortest_paths]
         closest_centroid = [min(dist, key=lambda d: d[1])[0] for dist in distances]
         d = defaultdict(list)
         for i, x in enumerate(closest_centroid):
@@ -87,7 +98,7 @@ def findCentroids(G, inital_centroids, iter_lim):
         for group in d.keys():
             nodeLengths = {}
             for member in d[group]:
-                pathLengths = [nx.algorithms.shortest_path_length(G, source=member, target=node) for node in d[group]]
+                pathLengths = [shortest_path_lengths[member][node] for node in d[group]]
                 nodeLengths[member] = sum(pathLengths)
             newCentroid = min(nodeLengths, key=nodeLengths.get)
             newCentroids.append(newCentroid)
@@ -119,7 +130,7 @@ def shortest_paths_solver(G, list_of_locations, home_indices, starting_index):
     car_path.extend(nx.algorithms.shortest_path(G, source=currLocation, target=starting_index)[1:])
     return car_path, dropoffs
 
-def anneal_solver(G, list_of_locations, homes, startLocation):
+def anneal_solver(G, list_of_locations, homes, startLocation, shortest_paths, shortest_path_lengths):
     # state is [[Rao's route], {dropoff location: dropoff TAs}]
     route = [startLocation] + [i[1] for i in nx.find_cycle(G, source=startLocation)]
     dropoffs = {}
