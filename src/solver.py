@@ -109,7 +109,11 @@ def shortest_paths_solver(G, list_of_locations, home_indices, starting_index):
 
 def anneal_solver(G, list_of_locations, homes, startLocation):
     # state is [[Rao's route], {dropoff location: dropoff TAs}]
-    init_state = []
+    route = [startLocation] + [i[1] for i in nx.find_cycle(G, source=startLocation)]
+    dropoffs = {}
+    for i in range(len(route) - 1):
+        dropoffs[route[i]] = homes[i // len(route) * len(homes) : (i + 1) // len(route) * len(homes)]
+    init_state = [route, dropoffs]
     dth = DTH(init_state, G)
     itinerary, e = dth.anneal()
     return itinerary
@@ -125,9 +129,14 @@ class DTH(Annealer):
 
     def move(self):
         """Creates next candidate state, returns change in energy"""
+        initial = self.energy()
+
+
+        return initial - self.energy()
 
     def energy(self):
         """Calculates total cost of trip"""
+        return cost_of_solution(self.graph, self.state[0], self.state[1])
 
 """
 ======================================================================
