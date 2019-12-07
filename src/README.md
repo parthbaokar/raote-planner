@@ -17,7 +17,6 @@ If you want to run solver on all of the input files in a directory, you will wan
 python3 solver.py --all <path to input directory> <path to output directory>
 ```
 
-Note: We changed the range in line 63 to be 2 for *_200.in, and 3 for *_100.in *_50.in.
 The solver will run the different strategies and return the output with the lowest cost.
 
 ## Strategies
@@ -28,3 +27,5 @@ The two fully implemented strategies are:
 The results from both of these strategies are compared, and the lower cost solution is returned.
 
 A third strategy which we did not have time to finish is an implementation of simulated annealing, which is a probabilistic technique for approximating the global optimum of a given function. At each iteration of this algorithm, it considers accepting a new state with some probability, with this converging to a global optimum in the long run. We tried to use the API from simanneal with limited success.
+
+Specifically, our approach was to assign Rao's driving route to our state. Each move, we either added or removed a location to his route. Sometimes, more than one location would be added because the neighbors of the insertion/deletion point were not connected. To calculate the energy, each TA chose the closest location on the route to be its dropoff point, and then the total cost was calculated.
