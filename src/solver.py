@@ -34,9 +34,9 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     homes = convert_locations_to_indices(list_of_homes, list_of_locations)
 
     # SHORTEST_PATHS = defaultdict(list)
-    # [SHORTEST_PATHS[node].append(nx.shortest_path(G, source=node, target=n, weight='weight')) for n in G.nodes]
     SHORTEST_PATHS_LENGTHS = defaultdict(list)
     for node in G.nodes:
+        # [SHORTEST_PATHS[node].append(nx.shortest_path(G, source=node, target=n, weight='weight')) for n in G.nodes]
         [SHORTEST_PATHS_LENGTHS[node].append(nx.algorithms.shortest_path_length(G, source=node, target=n)) for n in G.nodes]
 
     sp_car, sp_dropoff = shortest_paths_solver(G, list_of_locations, homes, startLocation)
@@ -132,18 +132,7 @@ def shortest_paths_solver(G, list_of_locations, home_indices, starting_index):
     car_path.extend(nx.algorithms.shortest_path(G, source=currLocation, target=starting_index)[1:])
     return car_path, dropoffs
 
-def anneal_solver(G, list_of_locations, homes, startLocation, shortest_paths, shortest_path_lengths):
-    # state is [Rao's route]
-    route = [startLocation] + [i[1] for i in nx.find_cycle(G, source=startLocation)]
-    # dropoffs = {}
-    # for i in range(len(route) - 1):
-    #     dropoffs[route[i]] = homes[i // len(route) * len(homes) : (i + 1) // len(route) * len(homes)]
-    init_state = [route]
-    dth = DTH(init_state, G)
-    itinerary, e = dth.anneal()
-    return itinerary
-
-def which_dropoff(G, route, home):
+def which_dropoff(route, home):
     """
     Where should a TA get dropped off along Rao's route?
     route: driving cycle (list)
@@ -152,12 +141,30 @@ def which_dropoff(G, route, home):
     return min(route, key=lambda i: SHORTEST_PATHS_LENGTHS[i][home])
 
 
+def anneal_solver(G, list_of_locations, homes, startLocation, shortest_paths, shortest_path_lengths):
+    # state is [Rao's route]
+    route = [startLocation] + [i[1] for i in nx.find_cycle(G, source=startLocation)]
+    # dropoffs = {}
+    # for i in range(len(route) - 1):
+    #     dropoffs[route[i]] = homes[i // len(route) * len(homes) : (i + 1) // len(route) * len(homes)]
+    init_state = [route]
+    dth = DTH(init_state, G, startLocation)
+    itinerary, e = dth.anneal()
+    dropoffs = defaultdict(list)
+    for home in self.homes:
+        d = which_dropoff(self.state, home)
+        dropoffs[d].append(home)
+    return itinerary, dropoffs
+
+
 # Simulated Annealing
 class DTH(Annealer):
 
     # Pass in initial state and graph
-    def __init__(self, state, graph):
+    def __init__(self, state, graph, start, homes):
         self.graph = graph
+        self.start = start
+        self.homes = homes
         super(DTH, self).__init__(state)  # important!
 
     def move(self):
@@ -166,7 +173,8 @@ class DTH(Annealer):
 
         if len(self.state) == 1:
             # Add a city to route
-            pass
+            next = random.choice([b for b in self.graph[self.start]])
+            self.state.extend([next, self.start])
         else:
             r = random.random()
             if r < 0.5:
@@ -207,7 +215,11 @@ class DTH(Annealer):
 
     def energy(self):
         """Calculates total cost of trip"""
-        return cost_of_solution(self.graph, self.state[0], self.state[1])
+        dropoffs = defaultdict(list)
+        for home in self.homes:
+            d = which_dropoff(self.state, home)
+            dropoffs[d].append(home)
+        return cost_of_solution(self.graph, self.state, dropoffs)
 
 """
 ======================================================================
