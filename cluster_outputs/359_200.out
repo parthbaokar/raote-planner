@@ -1,28 +1,24 @@
-node0 node1 node3 node1 node0 node7 node14 node15 node14 node21 node22 node21 node28 node35 node36 node35 node42 node43 node42 node49 node56 node63 node70 node77 node84 node85 node84 node91 node98 node91 node92 node91 node98 node105 node106 node105 node112 node113 node112 node119 node120 node122 node120 node119 node126 node127 node129 node127 node126 node133 node140 node147 node154 node161 node162 node161 node168 node169 node168 node175 node182 node175 node176 node175 node182 node189 node190 node189 node0
-26
-node1 node5 node6
-node3 node3
+node0 node7 node0 node1 node0 node189 node182 node175 node176 node175 node168 node169 node168 node161 node154 node147 node140 node141 node140 node133 node134 node133 node126 node127 node126 node119 node112 node105 node98 node91 node92 node91 node84 node85 node84 node77 node78 node77 node79 node77 node70 node63 node56 node49 node42 node44 node46 node44 node42 node35 node28 node21 node14 node15 node14 node21 node28 node29 node28 node21 node14 node7 node0 node189 node190 node189 node0
+22
 node7 node10 node12 node13
-node15 node17 node19 node20
-node22 node24 node26 node27
-node28 node31 node33 node34
-node36 node38 node40 node41
-node43 node45 node47 node48
-node49 node52 node54 node55 node59 node61 node62
-node70 node66 node68 node69 node73 node75 node76 node80 node82 node83
-node85 node87 node89 node90
-node98 node101 node103 node104
-node92 node94 node96 node97
-node106 node108 node110 node111
-node113 node115 node117 node118
-node120 node124 node125
-node122 node122
-node127 node131 node132
-node129 node129
-node133 node136 node138 node139 node143 node145 node146
-node147 node150 node152 node153 node157 node159 node160
-node162 node164 node166 node167
-node169 node171 node173 node174
+node1 node3 node5 node6
 node182 node185 node187 node188
 node176 node178 node180 node181
+node169 node171 node173 node174
+node154 node157 node159 node160 node164 node166 node167
+node147 node150 node152 node153
+node141 node143 node145 node146
+node134 node136 node138 node139
+node127 node129 node131 node132
+node112 node115 node117 node118 node122 node124 node125
+node98 node101 node103 node104 node108 node110 node111
+node92 node94 node96 node97
+node85 node87 node89 node90
+node78 node80 node82 node83
+node63 node59 node61 node62 node66 node68 node69 node73 node75 node76
+node42 node38 node40 node41 node52 node54 node55
+node46 node45 node47 node48
+node21 node24 node26 node27
+node15 node17 node19 node20
+node29 node31 node33 node34
 node190 node192 node194 node195

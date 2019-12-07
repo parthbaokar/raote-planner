@@ -19,4 +19,5 @@ If you want to run solver on all of the input files in a directory, you will wan
 python3 solver.py --all <path to input directory> <path to output directory>
 ```
 
+Note: We changed the range in line 63 to be 2 for *_200.in, and 3 for *_100.in *_50.in.
 The solver will run the different strategies and return the output with the lowest cost.
