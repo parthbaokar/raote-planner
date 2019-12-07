@@ -15,7 +15,7 @@ python3 solver.py <path to input file> <path to output directory>
 
 If you want to run solver on all of the input files in a directory, you will want to run:
 ```
-python3 solver.py <path to input directory> <path to output directory>
+python3 solver.py --all <path to input directory> <path to output directory>
 ```
 
 The solver will run the different strategies and return the output with the lowest cost.
