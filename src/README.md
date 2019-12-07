@@ -19,6 +19,8 @@ python3 solver.py --all <path to input directory> <path to output directory>
 
 The solver will run the different strategies and return the output with the lowest cost.
 
+Note: Line 63 of solver.py should have range(3) for inputs of size 50 and 100, and range(2) for inputs of size 200. This is the best balance of least cost solution and runtime length.
+
 ## Strategies
 The two fully implemented strategies are:
 1. Shortest paths: this strategy has Professor Rao optimally driving each TA to their home.
