@@ -40,7 +40,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         [SHORTEST_PATHS_LENGTHS[node].append(nx.algorithms.shortest_path_length(G, source=node, target=n)) for n in G.nodes]
 
     sp_car, sp_dropoff = shortest_paths_solver(G, list_of_locations, homes, startLocation)
-    cl_car, cl_dropoff = cluster_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
+    cl_car, cl_dropoff = cluster_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS_LENGTHS)
 
     cost_sp, message_sp = cost_of_solution(G, sp_car, sp_dropoff)
     cost_cl, message_cl = cost_of_solution(G, cl_car, cl_dropoff)
@@ -56,7 +56,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     # elif 'anneal' in params:
     #     return anneal_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
 
-def cluster_solver(G, list_of_locations, home_indices, starting_index, shortest_paths, shortest_path_lengths):
+def cluster_solver(G, list_of_locations, home_indices, starting_index, shortest_path_lengths):
     bestCost = float('inf')
     bestPath = None
     bestDropoff = None
@@ -64,14 +64,16 @@ def cluster_solver(G, list_of_locations, home_indices, starting_index, shortest_
         for numClusters in range(1, len(home_indices) + 1):
             mutableHomes = set(home_indices)
             # print('num clusters', numClusters)
-            centroids = findCentroids(G, random.sample(mutableHomes, k=numClusters), 200, shortest_paths, shortest_path_lengths)
+            centroids = findCentroids(G, random.sample(mutableHomes, k=numClusters), 200, shortest_path_lengths)
             car_path, dropoff = shortest_paths_solver(G, list_of_locations, centroids, starting_index)
+            # print('num dropped', sum([len(v) for k, v in dropoff.items()]))
             for drop in dropoff:
                 dropoff[drop] = []
             for drop, homes in dropoff.items():
                 for node, centroid in list(G.nodes(data='centroid')):
                     if centroid == drop and node in home_indices:
                         homes.append(node)
+            # print(sum([len(v) for k, v in dropoff.items()]))
             dropoff = {k: v for k, v in dropoff.items() if len(v) > 0}
             cost, message = cost_of_solution(G, car_path, dropoff)
             if cost < bestCost:
@@ -80,7 +82,7 @@ def cluster_solver(G, list_of_locations, home_indices, starting_index, shortest_
                 bestDropoff = dropoff
     return bestPath, bestDropoff
 
-def findCentroids(G, inital_centroids, iter_lim, shortest_paths_dij, shortest_path_lengths):
+def findCentroids(G, inital_centroids, iter_lim, shortest_path_lengths):
     centroids = inital_centroids
     iter_num = 0
     while iter_num < iter_lim:
@@ -88,7 +90,7 @@ def findCentroids(G, inital_centroids, iter_lim, shortest_paths_dij, shortest_pa
         iter_num += 1
         # shortest_paths = [[(cent, shortest_paths_dij[n][cent]) for cent in centroids] for n in G.nodes]
         # shortest_paths = [[(cent, nx.shortest_path(G, source=n ,target=cent, weight='weight')) for cent in centroids] for n in G.nodes]
-        distances = [[(sp[0],  sum([G[sp[1][i]][sp[1][i+1]]['weight'] for i in range(len(sp[1]) - 1)]) if len(sp[1]) > 1 else 0) for sp in sps] for sps in shortest_paths]
+        distances = [[(cent,  shortest_path_lengths[n][cent]) for cent in centroids] for n in G.nodes]
         # distances = [[(sp[0],  sum([G[sp[1][i]][sp[1][i+1]]['weight'] for i in range(len(sp[1]) - 1)]) if len(sp[1]) > 1 else 0) for sp in sps] for sps in shortest_paths]
         closest_centroid = [min(dist, key=lambda d: d[1])[0] for dist in distances]
         d = defaultdict(list)
@@ -102,7 +104,7 @@ def findCentroids(G, inital_centroids, iter_lim, shortest_paths_dij, shortest_pa
                 nodeLengths[member] = sum(pathLengths)
             newCentroid = min(nodeLengths, key=nodeLengths.get)
             newCentroids.append(newCentroid)
-        if set(newCentroids) == set(centroids) or iter_lim == 0:
+        if set(newCentroids) == set(centroids) or iter_num >= iter_lim:
             nodes = [n for n in G]  # the actual id of the nodes
             cent_dict = {nodes[i]: closest_centroid[i] for i in range(len(nodes))}
             nx.set_node_attributes(G, cent_dict, 'centroid')
