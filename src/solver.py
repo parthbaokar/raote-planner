@@ -35,32 +35,32 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
 
     # SHORTEST_PATHS = defaultdict(list)
     # [SHORTEST_PATHS[node].append(nx.shortest_path(G, source=node, target=n, weight='weight')) for n in G.nodes]
-    # SHORTEST_PATHS_LENGTHS = defaultdict(list)
-    # for node in G.nodes:
-    #     [SHORTEST_PATHS_LENGTHS[node].append(nx.algorithms.shortest_path_length(G, source=node, target=n)) for n in G.nodes]
+    SHORTEST_PATHS_LENGTHS = defaultdict(list)
+    for node in G.nodes:
+        [SHORTEST_PATHS_LENGTHS[node].append(nx.algorithms.shortest_path_length(G, source=node, target=n)) for n in G.nodes]
 
-    # sp_car, sp_dropoff = shortest_paths_solver(G, list_of_locations, homes, startLocation)
-    # cl_car, cl_dropoff = cluster_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS_LENGTHS)
+    sp_car, sp_dropoff = shortest_paths_solver(G, list_of_locations, homes, startLocation)
+    cl_car, cl_dropoff = cluster_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS_LENGTHS)
 
-    # cost_sp, message_sp = cost_of_solution(G, sp_car, sp_dropoff)
-    # cost_cl, message_cl = cost_of_solution(G, cl_car, cl_dropoff)
+    cost_sp, message_sp = cost_of_solution(G, sp_car, sp_dropoff)
+    cost_cl, message_cl = cost_of_solution(G, cl_car, cl_dropoff)
 
-    # if cost_sp < cost_cl:
-    #     return sp_car, sp_dropoff
-    # else:
-    #     return cl_car, cl_dropoff
-    if 'shortest_paths' in params:
-        return shortest_paths_solver(G, list_of_locations, homes, startLocation)
-    elif 'cluster' in params:
-        return cluster_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
-    elif 'anneal' in params:
-        return anneal_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
+    if cost_sp < cost_cl:
+        return sp_car, sp_dropoff
+    else:
+        return cl_car, cl_dropoff
+    # if 'shortest_paths' in params:
+    #     return shortest_paths_solver(G, list_of_locations, homes, startLocation)
+    # elif 'cluster' in params:
+    #     return cluster_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
+    # elif 'anneal' in params:
+    #     return anneal_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
 
 def cluster_solver(G, list_of_locations, home_indices, starting_index, shortest_path_lengths):
     bestCost = float('inf')
     bestPath = None
     bestDropoff = None
-    for _ in range(2):
+    for _ in range(3):
         for numClusters in range(1, len(home_indices) + 1):
             mutableHomes = set(home_indices)
             # print('num clusters', numClusters)
