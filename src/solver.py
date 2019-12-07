@@ -176,16 +176,6 @@ class DTH(Annealer):
             # Add a city to route
             next = random.choice([b for b in self.graph[self.start]])
             self.state.extend([next, self.start])
-        # elif len(self.state) == len(self.locations) + 1:
-        #     #remove city
-        #     index = random.randint(1, len(self.state) - 2)
-        #     toremove = self.state[index]
-        #     if self.state[index - 1] not in [b for b in G[self.state[index + 1]]]:
-        #         path = nx.shortest_path(self.graph, source=self.state[index - 1], target=self.state[index + 1])
-        #         toadd = path[1:-2]
-        #         self.state = self.state[:index] + toadd + self.state[index + 1:]
-        #     else:
-        #         del self.state[index]
         else:
             r = random.random()
             if r < 0.5:
@@ -211,34 +201,6 @@ class DTH(Annealer):
                     self.state = self.state[:index] + toadd + self.state[index + 1:]
                 else:
                     del self.state[index]
-
-
-        # if r < 0.25:
-        #     # if self.state[1].keys() == 1
-        #     # Move one home from one dropoff to another
-        #     drop1 = random.choice(self.state[0])
-        #     while self.state[1][drop1] == []:
-        #         # ensures there are dropoffs at this location
-        #         drop1 = random.choice(self.state[0])
-        #     drop2 = random.choice(self.state[0])
-        #     while drop2 == drop1:
-        #         drop2 = random.choice(self.state[0])
-        #     tomove = random.choice(self.state[1][drop1])
-        #     self.state[1][drop1].remove(tomove)
-        #     self.state[1][drop2].append(tomove)
-        # elif r < 0.5:
-        #     # Add a city to Rao's route
-        #
-        #     self.state[1][toadd] = []
-        # elif r < 0.75:
-        #     # Remove a city from Rao's route, if it is a dropoff point, move them to another dropoff
-        #     pass
-        # else:
-        #     #
-        #     pass
-
-
-
         return initial - self.energy()
 
     def energy(self):
