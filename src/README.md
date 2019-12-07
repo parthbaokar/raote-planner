@@ -6,6 +6,7 @@ This project depends on libraries that are not part of the standard Python distr
 ```
 pip install numpy networkx simanneal
 ```
+to install the proper libraries.
 
 If you want to run solver on one input file, you will want to run:
 
