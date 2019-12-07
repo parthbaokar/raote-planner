@@ -54,7 +54,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     # elif 'cluster' in params:
     #     return cluster_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
     # elif 'anneal' in params:
-    #     return anneal_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS, SHORTEST_PATHS_LENGTHS)
+    #     return anneal_solver(G, list_of_locations, homes, startLocation, SHORTEST_PATHS_LENGTHS)
 
 def cluster_solver(G, list_of_locations, home_indices, starting_index, shortest_path_lengths):
     bestCost = float('inf')
@@ -132,27 +132,30 @@ def shortest_paths_solver(G, list_of_locations, home_indices, starting_index):
     car_path.extend(nx.algorithms.shortest_path(G, source=currLocation, target=starting_index)[1:])
     return car_path, dropoffs
 
-def which_dropoff(route, home):
+def which_dropoff(route, home, spl):
     """
     Where should a TA get dropped off along Rao's route?
     route: driving cycle (list)
     home: the TA that's getting dropped off
     """
-    return min(route, key=lambda i: SHORTEST_PATHS_LENGTHS[i][home])
+    # print(route)
+    # print(spl)
+    # print(home)
+    return min(route, key=lambda i: spl[i][home])
 
 
-def anneal_solver(G, list_of_locations, homes, startLocation, shortest_paths, shortest_path_lengths):
+def anneal_solver(G, list_of_locations, homes, startLocation, shortest_path_lengths):
     # state is [Rao's route]
     route = [startLocation] + [i[1] for i in nx.find_cycle(G, source=startLocation)]
     # dropoffs = {}
     # for i in range(len(route) - 1):
     #     dropoffs[route[i]] = homes[i // len(route) * len(homes) : (i + 1) // len(route) * len(homes)]
-    init_state = [route]
-    dth = DTH(init_state, G, startLocation)
+    init_state = route
+    dth = DTH(init_state, G, startLocation, homes, list_of_locations, shortest_path_lengths)
     itinerary, e = dth.anneal()
     dropoffs = defaultdict(list)
     for home in self.homes:
-        d = which_dropoff(self.state, home)
+        d = which_dropoff(self.state, home, shortest_path_lengths, shortest_path_lengths)
         dropoffs[d].append(home)
     return itinerary, dropoffs
 
@@ -161,10 +164,12 @@ def anneal_solver(G, list_of_locations, homes, startLocation, shortest_paths, sh
 class DTH(Annealer):
 
     # Pass in initial state and graph
-    def __init__(self, state, graph, start, homes):
+    def __init__(self, state, graph, start, homes, locations, spl):
         self.graph = graph
         self.start = start
         self.homes = homes
+        self.locations = locations
+        self.spl = spl
         super(DTH, self).__init__(state)  # important!
 
     def move(self):
@@ -175,14 +180,41 @@ class DTH(Annealer):
             # Add a city to route
             next = random.choice([b for b in self.graph[self.start]])
             self.state.extend([next, self.start])
+        # elif len(self.state) == len(self.locations) + 1:
+        #     #remove city
+        #     index = random.randint(1, len(self.state) - 2)
+        #     toremove = self.state[index]
+        #     if self.state[index - 1] not in [b for b in G[self.state[index + 1]]]:
+        #         path = nx.shortest_path(self.graph, source=self.state[index - 1], target=self.state[index + 1])
+        #         toadd = path[1:-2]
+        #         self.state = self.state[:index] + toadd + self.state[index + 1:]
+        #     else:
+        #         del self.state[index]
         else:
             r = random.random()
             if r < 0.5:
                 # add city
-                pass
+                toadd = random.choice(self.locations)
+                while toadd in self.state:
+                    toadd = random.choice(self.locations)
+                index1 = random.randint(0, len(self.state) - 2)
+                loc1 = self.state[index1]
+                loc2 = self.state[index1 + 1]
+                path1 = nx.shortest_path(self.graph, source=loc1, target=toadd)
+                path2 = nx.shortest_path(self.graph, source=toadd, target=loc2)
+                self.state = self.state[:index1] + path1 + path2[1:] + self.state[index1 + 2:]
+
+
             else:
                 # remove city
-                pass
+                index = random.randint(1, len(self.state) - 2)
+                # toremove = self.state[index]
+                if self.state[index - 1] not in [b for b in G[self.state[index + 1]]]:
+                    path = nx.shortest_path(self.graph, source=self.state[index - 1], target=self.state[index + 1])
+                    toadd = path[1:-2]
+                    self.state = self.state[:index] + toadd + self.state[index + 1:]
+                else:
+                    del self.state[index]
 
 
         # if r < 0.25:
@@ -217,7 +249,7 @@ class DTH(Annealer):
         """Calculates total cost of trip"""
         dropoffs = defaultdict(list)
         for home in self.homes:
-            d = which_dropoff(self.state, home)
+            d = which_dropoff(self.state, home, self.spl)
             dropoffs[d].append(home)
         return cost_of_solution(self.graph, self.state, dropoffs)
 
